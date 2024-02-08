@@ -1,0 +1,125 @@
+---
+title: "Taylor Swift"
+output: html_document
+date: "2024-01-25"
+---
+
+
+```{r setup, include = FALSE}
+
+library(tidyverse)
+library(taylor)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+
+## Example
+
+There are three main data sets. The first is `taylor_album_songs`, which includes lyrics and audio features from the Spotify API for all songs on Taylor's official studio albums. Notably this excludes singles released separately from an album (e.g., *Only the Young*, *Christmas Tree Farm*, etc.), and non-Taylor-owned albums that have a Taylor-owned alternative (e.g., *Fearless* is excluded in favor of *Fearless (Taylor's Version)*). We stan artists owning their own songs.
+
+```{r album-songs}
+taylor_albulm_songs <- taylor_album_songs
+```
+
+You can access Taylor's entire discography with `taylor_all_songs`. This includes all of the songs in `taylor_album_songs` plus EPs, individual singles, and the original versions of albums that have been re-released as *Taylor's Version*.
+
+```{r all-songs}
+taylor_all_songs <- taylor_all_songs
+```
+
+Finally, there is a small data set, `taylor_albums`, summarizing Taylor's album release history.
+
+```{r albums}
+taylor_albums <- taylor_albums
+```
+
+```{r}
+
+# Set up Spotify API access
+client_id <- 'b5af36ff5bf1490b8e41060102108c5d'
+client_secret <- '8b58d77e04024dfb92b775a989872556'
+
+token <- httr::POST(
+  url = "https://accounts.spotify.com/api/token",
+  body = list(grant_type = "client_credentials"),
+  authenticate(client_id, client_secret),
+  encode = "form"
+) |> httr::content("parsed")
+
+artist_id = '06HL4z0CvFAxyc27GXpf02'  # Taylor Swift's Spotify artist ID
+
+
+
+```
+
+```{r}
+# Install and load required packages
+library(httr)
+library(dplyr)
+
+
+# Set up Spotify API access
+client_id <- 'b5af36ff5bf1490b8e41060102108c5d'
+client_secret <- '8b58d77e04024dfb92b775a989872556'
+
+# Authenticate with Spotify API
+token <- httr::POST(
+  url = "https://accounts.spotify.com/api/token",
+  body = list(
+    grant_type = "client_credentials"
+  ),
+  authenticate(client_id, client_secret),
+  encode = "form"
+) |> httr::content("parsed")
+
+# Get Taylor Swift's discography
+artist_id <- '06HL4z0CvFAxyc27GXpf02'  # Taylor Swift's Spotify artist ID
+
+albums <- httr::GET(
+  url = paste0("https://api.spotify.com/v1/artists/", artist_id, "/albums"),
+  add_headers(Authorization = paste0("Bearer ", token$access_token))
+) |> httr::content("parsed")
+
+# Extract track IDs
+track_ids <- sapply(albums$items, function(album) album$uri)
+
+# Get audio features for each track
+audio_features <- lapply(track_ids, function(track_id) {
+  httr::GET(
+    url = paste0("https://api.spotify.com/v1/audio-features/", URLencode(track_id)),
+    add_headers(Authorization = paste0("Bearer ", token$access_token))
+  ) |> httr::content("parsed")
+})
+
+# Extract popularity scores
+popularity_scores <- sapply(audio_features, function(features) features$popularity)
+
+# Create a data frame
+TS_popscore <- data.frame(TrackID = track_ids, PopularityScore = popularity_scores)
+
+# Save the data frame to a CSV file
+write.csv(TS_popscore, 'taylor_swift_popularity_scores.csv', row.names = FALSE)
+
+```
+
+
+```{r}
+
+# Manually input the data for the new column
+new_data <- c("103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103", "876", "999","103") 
+
+# Add the new column directly to the existing data frame
+taylor_all_songs$Streams <- new_data
+
+
+```
+
+
+
+
