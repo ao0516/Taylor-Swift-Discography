@@ -64,7 +64,7 @@ library(dplyr)
 
 # Set up Spotify API access
 client_id <- 'b5af36ff5bf1490b8e41060102108c5d'
-client_secret <- '8b58d77e04024dfb92b775a989872556'
+client_secret <- 
 
 # Authenticate with Spotify API
 token <- httr::POST(
@@ -114,6 +114,10 @@ new_data <- c("120681144", "177476212", "201819648","38006696", "393555192", "27
 
 # Add the new column directly to the existing data frame
 taylor_all_songs$Streams <- new_data
+
+taylor_all_songs$Streams <- as.numeric(taylor_all_songs$Streams)
+
+
 
 
 ```
