@@ -214,3 +214,31 @@ if (shapiro_test_result$p.value < 0.05) {
 
 ```
 
+##Separating by albums
+```{r}
+# Assuming taylor_all_songs is your original dataset
+# Replace 'your_dataset.csv' with the actual file name or read your dataset if not loaded
+
+# Get unique album names
+unique_albums <- unique(taylor_all_songs$album_name)
+
+# Loop through each album and create a dataset in the environment
+for (album in unique_albums) {
+  album_data <- taylor_all_songs %>%
+    filter(album_name == album)
+  
+  # Create a variable in the environment with the album name
+  assign(paste0("album_", gsub(" ", "_", album)), album_data)
+}
+
+# List all datasets in the environment
+ls(pattern = "album_")
+
+```
+
+
+
+
+
+
+
