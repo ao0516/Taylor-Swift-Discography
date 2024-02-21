@@ -120,11 +120,35 @@ taylor_all_songs$Streams <- as.numeric(taylor_all_songs$Streams)
 
 ```
 
-
+## Summary Statistics
 ```{r}
 summary(taylor_all_songs)
 ```
 
+## Stream normality
+```{r}
+library(e1071)
+library(ggplot2)
+
+
+# Plot a histogram
+ggplot(train_data, aes(x = Streams)) +
+  geom_histogram(binwidth = 10000, fill = "blue", color = "hotpink") +
+  labs(title = "Histogram of Streams",
+       x = "Streams",
+       y = "Frequency")
+
+# Plot a quantile-quantile (Q-Q) plot
+qqnorm(train_data$Streams)
+qqline(train_data$Streams, col = "red")
+
+# Calculate and print skewness and kurtosis
+cat("Skewness:", skewness(train_data$Streams), "\n")
+cat("Kurtosis:", kurtosis(train_data$Streams), "\n")
+
+```
+
+##linear regression
 ```{r}
 library(readr)
 library(dplyr)
@@ -177,6 +201,21 @@ ggplot() +
 summary(linear_model)
 
 
+
+```
+```{r}
+# Check if the "Streams" variable is normally distributed in the training set
+shapiro_test_result <- shapiro.test(train_data$Streams)
+
+# Print the result of the Shapiro-Wilk test
+cat("Shapiro-Wilk test p-value:", shapiro_test_result$p.value, "\n")
+
+# Interpret the result
+if (shapiro_test_result$p.value < 0.05) {
+  cat("The data is not normally distributed.\n")
+} else {
+  cat("The data appears to be normally distributed.\n")
+}
 
 ```
 
