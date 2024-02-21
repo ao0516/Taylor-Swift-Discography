@@ -118,10 +118,65 @@ taylor_all_songs$Streams <- new_data
 taylor_all_songs$Streams <- as.numeric(taylor_all_songs$Streams)
 
 
-
-
 ```
 
 
+```{r}
+summary(taylor_all_songs)
+```
 
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(caret)
+
+
+# Select relevant columns for the model
+selected_features <- c("album_name", "track_number", "track_name", "danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "time_signature", "duration_ms", "explicit", "key_name", "mode_name", "Streams")
+
+# Create a data frame with selected features and the target variable
+model_data <- taylor_all_songs %>%
+  select(Streams, all_of(selected_features)) %>%
+  na.omit()  # Remove rows with missing values
+
+# Split the dataset into training and testing sets
+set.seed(123)
+train_index <- createDataPartition(model_data$Streams, p = 0.8, list = FALSE)
+train_data <- model_data[train_index, ]
+test_data <- model_data[-train_index, ]
+
+# Ensure levels of categorical variables are consistent
+categorical_columns <- c("album_name", "track_name", "key_name", "mode_name")
+
+for (col in categorical_columns) {
+  levels_train <- levels(train_data[[col]])
+  test_data[[col]] <- factor(test_data[[col]], levels = levels_train)
+}
+
+# Build a linear regression model
+linear_model <- lm(Streams ~ energy + loudness + track_number + speechiness , data = train_data)
+
+# Make predictions on the test set
+predictions <- predict(linear_model, newdata = test_data)
+
+# Evaluate the model
+rmse <- sqrt(mean((predictions - test_data$Streams)^2))
+cat("Root Mean Squared Error (RMSE):", rmse, "\n")
+
+# Visualize actual vs. predicted values
+ggplot() +
+  geom_point(aes(x = test_data$Streams, y = predictions), color = "blue") +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(title = "Actual vs. Predicted Streams",
+       x = "Actual Streams",
+       y = "Predicted Streams")
+
+# Display the summary of the linear model
+summary(linear_model)
+
+
+
+```
 
