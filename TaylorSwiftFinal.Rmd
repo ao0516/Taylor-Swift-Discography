@@ -216,9 +216,6 @@ if (shapiro_test_result$p.value < 0.05) {
 
 ##Separating by albums
 ```{r}
-# Assuming taylor_all_songs is your original dataset
-# Replace 'your_dataset.csv' with the actual file name or read your dataset if not loaded
-
 # Get unique album names
 unique_albums <- unique(taylor_all_songs$album_name)
 
@@ -236,7 +233,62 @@ ls(pattern = "album_")
 
 ```
 
+```{r}
+# Plot the number of streams for each song in each album
+ggplot(taylor_all_songs, aes(x = reorder(track_name, Streams), y = Streams, fill = album_name)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Number of Streams for Each Song in Each Album",
+       x = "Song",
+       y = "Number of Streams") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+```
+
+```{r}
+# Get unique album names
+unique_albums <- unique(taylor_all_songs$album_name)
+
+# Define your desired colors for each album
+album_colors <- c("Red" = "red", "Red (Taylor's Version)" = "firebrick", "1989" = "skyblue", "1989 (Taylor's Version)" = "royalblue", "Fearless" = "yellow", "Fearless (Taylor's Version)" = "gold", "Speak Now" = "violet", "Speak Now (Taylor's Version)" = "purple" , "Lover" = "hotpink", "Folklore" = "grey", "reputation" = "black", "evermore" = "chocolate", "Taylor Swift" = "lightgreen", "Midnights" = "navy", "Beautiful Eyes" = "orange")
+
+# Create a separate graph for each album with a custom color
+for (i in seq_along(unique_albums)) {
+  album <- unique_albums[i]
+  album_data <- taylor_all_songs %>%
+    filter(album_name == album)
+  
+  # Get the color for the current album
+  color <- album_colors[album]
+  
+  # Plot the number of streams for each song in the album
+  plot <- ggplot(album_data, aes(x = reorder(track_name, Streams), y = Streams, fill = album)) +
+    geom_bar(stat = "identity") +
+    labs(title = paste("Number of Streams for Each Song in", album),
+         x = "Song",
+         y = "Number of Streams") +
+    scale_fill_manual(values = color) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  # Display the plot
+  print(plot)
+}
+
+
+```
+```{r}
+# Create a new variable indicating the version
+taylor_all_songs$version <- ifelse(grepl("Taylor's Version", taylor_all_songs$album_name), "Taylor's Version", "")
+
+# Plot the number of streams for each song by version
+ggplot(taylor_all_songs, aes(x = reorder(track_name, Streams), y = Streams, fill = version)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Number of Streams for Each Song by Version",
+       x = "Song",
+       y = "Number of Streams",
+       fill = "Version") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
 
 
 
