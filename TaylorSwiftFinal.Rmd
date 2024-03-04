@@ -121,8 +121,13 @@ taylor_all_songs$Streams <- as.numeric(taylor_all_songs$Streams)
 ```
 
 ```{r}
-# Save the data frame to a CSV file
-write.csv(taylor_all_songs, 'taylor_swift_discography.csv', row.names = FALSE)
+# Exclude columns with list type
+columns_to_exclude <- sapply(taylor_all_songs, is.list)
+taylor_all_songs_no_lists <- taylor_all_songs[, !columns_to_exclude]
+
+# Write CSV without row names
+write.csv(taylor_all_songs_no_lists, 'taylor_swift_discography.csv', row.names = FALSE)
+
 ```
 
 
