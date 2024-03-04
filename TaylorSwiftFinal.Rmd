@@ -120,6 +120,12 @@ taylor_all_songs$Streams <- as.numeric(taylor_all_songs$Streams)
 
 ```
 
+```{r}
+# Save the data frame to a CSV file
+write.csv(taylor_all_songs, 'taylor_swift_discography.csv', row.names = FALSE)
+```
+
+
 ## Summary Statistics
 ```{r}
 summary(taylor_all_songs)
@@ -290,7 +296,89 @@ ggplot(taylor_all_songs, aes(x = reorder(track_name, Streams), y = Streams, fill
 
 ```
 
+##logistic regression
 
+
+```{r}
+library(dplyr)
+library(caret)
+library(car)
+
+# Convert categorical variables to factors
+taylor_all_songs$album_name <- as.factor(taylor_all_songs$album_name)
+taylor_all_songs$track_name <- as.factor(taylor_all_songs$track_name)
+
+# Create a binary outcome variable
+taylor_all_songs$binary_streams <- ifelse(taylor_all_songs$Streams > median(taylor_all_songs$Streams), 1, 0)
+
+# Select relevant features
+selected_features <- c("album_name", "track_number", "danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "time_signature", "duration_ms", "explicit", "binary_streams")
+
+# Create the model data
+model_data <- taylor_all_songs %>%
+  select(all_of(selected_features)) %>%
+  na.omit()  # Remove rows with missing values
+
+# Split the dataset into training and testing sets
+set.seed(123)
+train_index <- createDataPartition(model_data$binary_streams, p = 0.8, list = FALSE)
+train_data <- model_data[train_index, ]
+test_data <- model_data[-train_index, ]
+
+# Check for multicollinearity
+vif_values <- car::vif(lm(binary_streams ~ ., data = train_data))
+print("VIF values:")
+print(vif_values)
+
+# Build a logistic regression model
+logistic_model <- glm(binary_streams ~ ., data = train_data, family = "binomial")
+
+# Make predictions on the test set
+predictions <- predict(logistic_model, newdata = test_data, type = "response")
+
+# Convert predicted probabilities to binary predictions (0 or 1)
+binary_predictions <- ifelse(predictions > 0.5, 1, 0)
+
+# Evaluate the model
+confusion_matrix <- table(test_data$binary_streams, binary_predictions)
+cat("Confusion Matrix:\n", confusion_matrix, "\n")
+
+# Calculate accuracy
+accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+cat("Accuracy:", accuracy, "\n")
+
+# Display the summary of the logistic regression model
+print("Logistic Regression Model Summary:")
+print(summary(logistic_model))
+
+```
+
+```{r}
+library(pROC)
+
+# Create a ROC curve and calculate AUC
+roc_curve <- roc(test_data$binary_streams, predictions)
+auc_value <- auc(roc_curve)
+
+# Plot the ROC curve
+plot(roc_curve, main = "ROC Curve for Logistic Regression",
+     col = "blue", lwd = 2, cex.main = 1.2,
+     col.main = "darkred", lty = 2)
+
+# Add AUC value to the plot
+text(0.8, 0.2, paste("AUC =", round(auc_value, 3)),
+     col = "darkred", cex = 1.2)
+
+# Add diagonal reference line for a random classifier
+abline(a = 0, b = 1, lty = 3, col = "gray")
+
+# Add legend
+legend("bottomright", legend = c("Logistic Regression", "Random Classifier"),
+       col = c("blue", "gray"), lwd = c(2, 1), lty = c(1, 3))
+
+# Display the plot
+
+```
 
 
 
