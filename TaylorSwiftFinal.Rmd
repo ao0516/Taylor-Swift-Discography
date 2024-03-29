@@ -384,6 +384,35 @@ legend("bottomright", legend = c("Logistic Regression", "Random Classifier"),
 # Display the plot
 
 ```
+##Decision Tree
+```{r}
+library(rpart)
+library(rpart.plot)
+library(caret)
+set.seed(123)
 
+# Split the data into training and testing sets (70% training, 30% testing)
+train_index <- createDataPartition(taylor_all_songs$Streams, p = 0.7, list = FALSE)
+train_data <- taylor_all_songs[train_index, ]
+train_data <- subset(train_data, select = -c(lyrics, artist, featuring, key_mode, track_name, binary_streams))
+test_data <- taylor_all_songs[-train_index, ]
+
+# Define the formula for the decision tree model
+formula <- Streams ~ . 
+
+# Train the decision tree model
+decision_tree <- rpart(formula, data = train_data)
+
+# Plot the decision tree
+rpart.plot(decision_tree, main = "Decision Tree for Predicting Streams")
+
+# Make predictions on the testing data
+predictions <- predict(decision_tree, test_data, type = "vector")
+
+# Evaluate the model's performance
+accuracy <- mean((predictions - test_data$Streams)^2)
+print(paste("Mean squared error:", accuracy))
+
+```
 
 
