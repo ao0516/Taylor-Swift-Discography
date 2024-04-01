@@ -187,7 +187,7 @@ for (col in categorical_columns) {
   test_data[[col]] <- factor(test_data[[col]], levels = levels_train)
 }
 # Build a linear regression model
-linear_model <- lm(Streams ~ energy + loudness + track_number + speechiness, data = train_data)
+linear_model <- lm(Streams ~ energy + loudness + track_number + speechiness , data = train_data)
 # Make predictions on the test set
 predictions <- predict(linear_model, newdata = test_data)
 
@@ -209,6 +209,28 @@ summary(linear_model)
 
 
 ```
+##Track number ANOVA + Tukey
+```{r}
+# Convert track number to factor
+train_data$track_number <- as.factor(train_data$track_number)
+
+# Perform ANOVA
+anova_result <- aov(Streams ~ track_number, data = train_data)
+print(summary(anova_result))
+
+# Perform post-hoc tests
+tukey_results <- TukeyHSD(anova_result)
+print(tukey_results)
+
+```
+
+
+
+
+
+
+
+
 ```{r}
 # Check if the "Streams" variable is normally distributed in the training set
 shapiro_test_result <- shapiro.test(train_data$Streams)
@@ -394,7 +416,7 @@ set.seed(123)
 # Split the data into training and testing sets (70% training, 30% testing)
 train_index <- createDataPartition(taylor_all_songs$Streams, p = 0.7, list = FALSE)
 train_data <- taylor_all_songs[train_index, ]
-train_data <- subset(train_data, select = -c(lyrics, artist, featuring, key_mode, track_name, binary_streams))
+train_data <- subset(train_data, select = -c(lyrics, album_name, artist, featuring, key_mode, track_name, binary_streams))
 test_data <- taylor_all_songs[-train_index, ]
 
 # Define the formula for the decision tree model
@@ -413,6 +435,29 @@ predictions <- predict(decision_tree, test_data, type = "vector")
 accuracy <- mean((predictions - test_data$Streams)^2)
 print(paste("Mean squared error:", accuracy))
 
+```
+```{r}
+# Split the data into training and testing sets (70% training, 30% testing)
+train_index <- createDataPartition(taylor_all_songs$Streams, p = 0.7, list = FALSE)
+train_data <- taylor_all_songs[train_index, ]
+train_data <- subset(train_data, select = -c(lyrics, album_name, artist, featuring, key_mode, track_name, binary_streams))
+test_data <- taylor_all_songs[-train_index, ]
+
+# Define the formula for the decision tree model
+formula <- Streams ~ duration_ms + tempo + track_number + energy + loudness + instrumentalness + speechiness + key_name + valence + danceability 
+
+# Train the decision tree model
+decision_tree <- rpart(formula, data = train_data)
+
+# Plot the decision tree
+rpart.plot(decision_tree, main = "Decision Tree for Predicting Streams")
+
+# Make predictions on the testing data
+predictions <- predict(decision_tree, test_data, type = "vector")
+
+# Evaluate the model's performance
+accuracy <- mean((predictions - test_data$Streams)^2)
+print(paste("Mean squared error:", accuracy))
 ```
 
 
