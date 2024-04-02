@@ -98,12 +98,6 @@ audio_features <- lapply(track_ids, function(track_id) {
 # Extract popularity scores
 popularity_scores <- sapply(audio_features, function(features) features$popularity)
 
-# Create a data frame
-TS_popscore <- data.frame(TrackID = track_ids, PopularityScore = popularity_scores)
-
-# Save the data frame to a CSV file
-write.csv(TS_popscore, 'taylor_swift_popularity_scores.csv', row.names = FALSE)
-
 ```
 
 
@@ -140,7 +134,26 @@ summary(taylor_all_songs)
 ```{r}
 library(e1071)
 library(ggplot2)
+library(caret)
 
+# Select relevant columns for the model
+selected_features <- c("album_name", "track_number", "track_name", "danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "time_signature", "duration_ms", "explicit", "key_name", "mode_name", "key_mode", "Streams")
+
+# Create a data frame with selected features and the target variable
+model_data <- taylor_all_songs %>%
+  select(Streams, all_of(selected_features)) %>%
+  na.omit()  # Remove rows with missing values
+
+set.seed(123)
+train_index <- createDataPartition(model_data$Streams, p = 0.8, list = FALSE)
+train_data <- model_data[train_index, ]
+test_data <- model_data[-train_index, ]
+# Ensure levels of categorical variables are consistent
+categorical_columns <- c("album_name", "track_name", "key_name", "mode_name")
+for (col in categorical_columns) {
+  levels_train <- levels(train_data[[col]])
+  test_data[[col]] <- factor(test_data[[col]], levels = levels_train)
+}
 
 # Plot a histogram
 ggplot(train_data, aes(x = Streams)) +
@@ -156,6 +169,33 @@ qqline(train_data$Streams, col = "red")
 # Calculate and print skewness and kurtosis
 cat("Skewness:", skewness(train_data$Streams), "\n")
 cat("Kurtosis:", kurtosis(train_data$Streams), "\n")
+
+```
+##Log streams to normal
+```{r}
+library(e1071)
+
+# Check the current distribution of the stream data
+original_skewness <- skewness(taylor_all_songs$Streams)
+cat("Original Skewness:", original_skewness, "\n")
+
+# Log-transform the stream data
+taylor_all_songs$log_Streams <- log(taylor_all_songs$Streams)
+
+
+# Check the distribution of the log-transformed data
+log_skewness <- skewness(taylor_all_songs$log_Streams)
+cat("Log-Transformed Skewness:", log_skewness, "\n")
+
+# Plot a histogram
+ggplot(taylor_all_songs, aes(x = log_Streams)) +
+  geom_histogram(binwidth = 10000, fill = "blue", color = "hotpink") +
+  labs(title = "Histogram of Streams",
+       x = "Streams",
+       y = "Frequency")
+# Plot a quantile-quantile (Q-Q) plot
+qqnorm(train_data$log_Streams)
+qqline(train_data$log_Streams, col = "red")
 
 ```
 
@@ -186,6 +226,9 @@ for (col in categorical_columns) {
   levels_train <- levels(train_data[[col]])
   test_data[[col]] <- factor(test_data[[col]], levels = levels_train)
 }
+
+train_data$log_Streams <- log(train_data$Streams)
+test_data$log_Streams <- log(test_data$Streams)
 # Build a linear regression model
 linear_model <- lm(Streams ~ energy + loudness + track_number + speechiness , data = train_data)
 # Make predictions on the test set
@@ -223,10 +266,49 @@ tukey_results <- TukeyHSD(anova_result)
 print(tukey_results)
 
 ```
+##Linear regression after log streams
+```{r}
+# Remove rows with missing or infinite values in log_Streams
+train_data <- train_data[!is.na(train_data$log_Streams) & is.finite(train_data$log_Streams), ]
+# Convert track_number to numeric if it's stored as a factor
+train_data$track_number <- as.numeric(as.character(train_data$track_number))
+
+# Build a linear regression model
+linear_model <- lm(log_Streams ~ energy + loudness + track_number + speechiness, data = train_data)
+
+# Make predictions on the test set
+predictions <- predict(linear_model, newdata = test_data)
+
+# Evaluate the model
+rmse <- sqrt(mean((predictions - log(test_data$Streams))^2))
+cat("Root Mean Squared Error (RMSE):", rmse, "\n")
+
+# Visualize actual vs. predicted values
+ggplot() +
+  geom_point(aes(x = log(test_data$Streams), y = predictions), color = "blue") +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(title = "Actual vs. Predicted Streams",
+       x = "Actual Log-Transformed Streams",
+       y = "Predicted Log-Transformed Streams")
+
+# Display the summary of the linear model
+summary(linear_model)
 
 
+```
+```{r}
+# Convert track number to factor
+train_data$track_number <- as.factor(train_data$track_number)
 
+# Perform ANOVA
+anova_result <- aov(log_Streams ~ track_number, data = train_data)
+print(summary(anova_result))
 
+# Perform post-hoc tests
+tukey_results <- TukeyHSD(anova_result)
+print(tukey_results)
+
+```
 
 
 
