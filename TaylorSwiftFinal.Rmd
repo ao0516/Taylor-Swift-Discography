@@ -193,9 +193,20 @@ ggplot(taylor_all_songs, aes(x = log_Streams)) +
   labs(title = "Histogram of Streams",
        x = "Streams",
        y = "Frequency")
+
+train_data$log_Streams <- log(train_data$Streams)
+test_data$log_Streams <- log(test_data$Streams)
+# Remove rows with missing or infinite values
+train_data <- na.omit(train_data)
+train_data <- train_data[is.finite(train_data$log_Streams), ]
+
 # Plot a quantile-quantile (Q-Q) plot
 qqnorm(train_data$log_Streams)
 qqline(train_data$log_Streams, col = "red")
+
+# Calculate and print skewness and kurtosis
+cat("Skewness:", skewness(train_data$log_Streams), "\n")
+cat("Kurtosis:", kurtosis(train_data$log_Streams), "\n")
 
 ```
 
