@@ -7,8 +7,9 @@ Ava Oberle
 ### Purpose
 The purpose of this project is to see what factors are important when trying to produce a popular song. Taylor Swift is a very successful artist, so I'm using her music to see what she does to create such hits.
 
-## Research Question & Hypothesis
+### Research Question & Hypothesis
 **Research Question:** What variables within a song in Taylor Swift’s discography lead to a high amount of streams on Spotify?
+
 **Hypothesis:** I expect that danceability, energy, tempo and key will all play a significant role in high stream count.
 
 
