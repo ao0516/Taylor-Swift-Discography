@@ -341,6 +341,32 @@ summary(linear_model)
 
 ```
 ```{r}
+# Fit the linear model
+model <- lm(log_Streams ~ energy + loudness + track_number + speechiness, data = train_data)
+
+# Get coefficient estimates and confidence intervals
+coef_est <- coef(summary(model))
+conf_int <- confint(model)
+
+# Get predictor-level p-values
+p_values <- summary(model)$coefficients[, "Pr(>|t|)"]
+
+# Combine estimates, confidence intervals, and p-values into a data frame
+summary_table <- cbind(coef_est[, "Estimate"], conf_int, p_values)
+colnames(summary_table) <- c("Estimate", "2.5 %", "97.5 %", "p-value")
+rownames(summary_table) <- c("(Intercept)", "energy", "loudness", "track_number", "speechiness")
+
+# Round the values
+summary_table <- round(summary_table, 3)
+
+# Print the summary table
+print(summary_table)
+
+
+```
+
+
+```{r}
 # Convert track number to factor
 train_data$track_number <- as.factor(train_data$track_number)
 
