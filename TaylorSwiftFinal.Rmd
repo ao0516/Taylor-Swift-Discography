@@ -357,7 +357,7 @@ colnames(summary_table) <- c("Estimate", "2.5 %", "97.5 %", "p-value")
 rownames(summary_table) <- c("(Intercept)", "energy", "loudness", "track_number", "speechiness")
 
 # Round the values
-summary_table <- round(summary_table, 3)
+summary_table <- round(summary_table, 6)
 
 # Print the summary table
 print(summary_table)
