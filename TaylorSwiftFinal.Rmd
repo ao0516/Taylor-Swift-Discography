@@ -255,6 +255,27 @@ ggplot() +
        x = "Actual Streams",
        y = "Predicted Streams")
 
+ggplot(data = test_data, aes(x = Streams, y = predictions)) +
+  geom_point(color = "blue", shape = 16, size = 3) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(title = "Actual vs. Predicted Streams",
+       x = "Actual Streams",
+       y = "Predicted Streams") +
+  theme_minimal()
+
+ggplot() +
+  geom_point(aes(x = test_data$Streams, y = predictions), color = "#0072B2") +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "#D55E00") +
+  labs(title = "Comparison of Actual and Predicted Streams",
+       x = "Actual Streams",
+       y = "Predicted Streams") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        legend.position = "none")
+
+
 # Display the summary of the linear model
 summary(linear_model)
 
@@ -299,6 +320,20 @@ ggplot() +
   labs(title = "Actual vs. Predicted Streams",
        x = "Actual Log-Transformed Streams",
        y = "Predicted Log-Transformed Streams")
+
+
+ggplot() +
+  geom_point(aes(x = log(test_data$Streams), y = predictions), color = "#0072B2") +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "#D55E00") +
+  labs(title = "Comparison of Actual and Predicted Streams",
+       x = "Actual Log-Transformed Streams",
+       y = "Predicted Log-Transformed Streams") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        legend.position = "none")
+
 
 # Display the summary of the linear model
 summary(linear_model)
