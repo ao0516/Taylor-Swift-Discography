@@ -6,7 +6,9 @@ date: "2024-01-25"
 
 
 ```{r setup, include = FALSE}
-
+# Install and load required packages
+library(httr)
+library(dplyr)
 library(tidyverse)
 library(taylor)
 
@@ -57,10 +59,6 @@ artist_id = '06HL4z0CvFAxyc27GXpf02'  # Taylor Swift's Spotify artist ID
 ```
 
 ```{r}
-# Install and load required packages
-library(httr)
-library(dplyr)
-
 
 # Set up Spotify API access
 client_id <- 'b5af36ff5bf1490b8e41060102108c5d'
@@ -575,5 +573,8 @@ predictions <- predict(decision_tree, test_data, type = "vector")
 # Evaluate the model's performance
 accuracy <- mean((predictions - test_data$Streams)^2)
 print(paste("Mean squared error:", accuracy))
+```
+```{r}
+print(median(taylor_all_songs$Streams))
 ```
 
